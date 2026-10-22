@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ko" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="google" content="notranslate">
+    <title>수평선 너머의 서재</title>
+    
+    <meta name="description" content="노을지는 수평선 너머의 바다, 그 곳에 있는 서재. 아시, 하은이라는 기록자가 글을 서재라는 바다에 기록하는 문학적 아카이브 공간입니다.">
+
+    <meta property="og:title" content="수평선 너머의 서재">
+    <meta property="og:description" content="노을지는 수평선 너머의 바다, 그 곳에 있는 서재. 아시, 하은이라는 기록자가 글을 서재라는 바다에 기록하는 문학적 아카이브 공간입니다.">
+    <meta property="og:image" content="글_하은.png"> <meta property="og:type" content="website">
+    <link rel="icon" href="글_하은.png" type="image/png">
+    <link rel="shortcut icon" href="멘헤라_하은.png" type="image/png">
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#061630">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="글_하은.png">
+
+    <link rel="apple-touch-icon" href="글_하은.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="글_하은.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="글_하은.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="수평선 너머의 서재">
+
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app-check.js"></script>
+</head>
+<body>
+
+    <div id="loading-screen">
+        <div class="loader">
+            <div class="sun-glow"></div>
+            <div class="wave-loading"></div>
+            <p>수평선 너머 바다를 불러오는 중...</p>
+        </div>
+    </div>
+
+    <div class="ocean-background">
+        <div class="ocean-deep-water"></div>
+        <div class="yoonseul-sunlight"></div>
+        <div class="wave-ripple ripple1"></div>
+        <div class="wave-ripple ripple2"></div>
+        <div class="wave-ripple ripple3"></div>
+    </div>
+
+    <svg style="position: absolute; width: 0; height: 0;">
+        <filter id="yoonseul-glimmer">
+            <feTurbulence type="fractalNoise" baseFrequency="0.02 0.15" numOctaves="3" result="noise" />
+            <feDisplacementMap in="SourceGraphic" in2="noise" scale="18" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+    </svg>
+
+    <div id="app">
+        <div class="mini-audio-player" id="mini-audio-trigger" title="음악 재생 / 일시정지">
+            <div class="vinyl-disc">
+                <div class="vinyl-groove"></div>
+                <div class="vinyl-center-hole"></div>
+            </div>
+        </div>
+
+        <div class="mini-backup-manager" id="mini-backup-trigger" title="기록자 관리창 열기" onclick="window.openBackupModal()" style="display: none;">
+            <div class="backup-core-icon">
+                <div class="backup-spin-ring"></div>
+                <div class="backup-center-dot"></div>
+            </div>
+        </div>
+
+        <div class="mini-library-btn" id="mini-library-trigger" title="서재 공지 및 안내" onclick="window.openLibraryModal()">
+            <div class="library-core-icon">📖</div>
+        </div>
+
+        <header>
+            <h1 class="main-title">수평선 너머의 서재</h1>
+            <p class="subtitle">노을지는 수평선 너머의 서재, 그 바다 속의 기록들</p>
+            <div class="auth-box">
+                <div class="auth-flex">
+                    <button id="login-btn" onclick="window.openModal()">기록자 로그인</button>
+                    <div id="admin-menu" style="display: none; gap: 10px;">
+                        <button id="init-btn" class="danger-btn" onclick="window.clearDatabase()">초기화</button>
+                        <button id="current-user-btn" style="cursor: default; pointer-events: none; border-color: #90e0ef; color: #90e0ef;"></button>
+                        <button id="logout-btn" onclick="window.logout()">나가기</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-tab-container" class="view-tab-container" style="display: none;">
+                <button id="tab-posts" class="tab-btn active" onclick="window.switchView('posts')">🌊 기록된 바다</button>
+                <button id="tab-horizons" class="tab-btn" onclick="window.switchView('horizons')" style="display: none;">🌌 수평선 너머</button>
+                <button id="tab-letters" class="tab-btn" onclick="window.switchView('letters')">✉️ 띄워진 편지</button>
+            </div>
+        </header>
+
+        <main>
+            <section id="write-section" style="display: none;">
+                <h3 id="write-title">새로운 기록 남기기</h3>
+                <input type="text" id="post-title" placeholder="제목을 입력해주세요.">
+                <textarea id="post-content" rows="8" placeholder="수평선 너머의 이야기를 적어주세요!"></textarea>
+                <div class="write-buttons">
+                    <button id="submit-post-btn" onclick="window.savePost()">기록하기</button>
+                    <button id="cancel-edit-btn" class="cancel-btn" onclick="window.cancelEdit()" style="display:none;">수정 취소</button>
+                </div>
+            </section>
+
+            <section id="letter-section">
+                <h3>바다에 편지 띄우기</h3>
+                <input type="text" id="letter-title" placeholder="편지 제목을 입력해주세요.">
+                <textarea id="letter-content" rows="5" placeholder="기록자 분들에게 띄워 보낼 편지의 내용을 입력해주세요."></textarea>
+                
+                <div class="terms-container">
+                    <div class="terms-box">
+                        <strong>[안내]</strong><br><br>
+                        1. 기록자 분들에게 전할 따뜻한 편지를 적어주세요. 본인이 누군지 밝혀주시면 더욱 좋습니다.<br>
+                        2. 현재 지정된 기록자만이 기록된 바다에 글 작성이 가능하며, 지정된 기록자는 3번과 같습니다.<br>
+                        3. 현재 기록자 목록 : 하은, 아시 (&copy; 아시. & 하은. writing.)<br>
+                        4. 부적절한 내용이나 이상한 편지로 판단되는 편지는 소멸처리됩니다.<br>
+                        5. 편지는 지정된 기록자만이 확인 가능하나, 개인정보 유출에 유의해주세요.<br>
+                        6. 편지를 안전하게 띄우기 위해, 띄우기를 누르신 후 안내창이 뜰 때까지 사이트를 끄지마세요.<br>
+                    </div>
+                    <label class="terms-label">
+                        <input type="checkbox" id="agree-terms"> 위 안내 내용을 모두 확인하였으며, 이에 동의합니다.
+                    </label>
+                </div>
+                
+                <div class="write-buttons">
+                    <button id="submit-letter-btn" onclick="window.saveLetter()">편지 띄우기</button>
+                </div>
+            </section>
+
+            <section id="posts-section">
+                <h1 id="section-main-title" class="centered-title">기록된 바다</h1><br>
+                <p class="section-subtitle">아래 바다에 기록된 글들을 클릭하여 읽어주세요!</p><br>
+                
+                <div class="search-wrapper">
+                    <div id="author-stats" class="author-stats" style="display: none;"></div>
+                    
+                    <div class="search-container">
+                        <input type="text" id="search-input" placeholder="기록의 제목을 검색해보세요!" oninput="window.handleSearch()">
+                    </div>
+                    
+                    <div id="author-filter-container" class="author-filter-container" style="display: none;">
+                        <select id="author-filter" onchange="window.handleSearch()">
+                            <option value="all">전체 보기</option>
+                            <option value="아시">아시 님</option>
+                            <option value="하은">하은 님</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="posts-container" class="posts-grid"></div>
+                <div id="pagination-container" class="pagination"></div>
+            </section>
+        </main>
+
+        <footer>
+            <h4>마리존 - 수평선 너머의 바다, 그 곳에 있는 서재</h4><br>
+            <p>&copy; 2026. KUSE. BGM - Ethereal Horizon</p><br>
+            <p>&copy; 2026. atritime. & haeun. writing.</p><br>
+            <p>&copy; 2026. atritime. site code, design.</p><br>
+            <p>아시 ❤️ 하은</p><br>
+            <div class="footer-business-contact">
+    Business & Inquiries : <a href="mailto:inquiry.writing@gmail.com">inquiry.writing@gmail.com</a>
+</div>
+            <div class="footer-donation-btn" onclick="openDonationModal()">
+    ☕ 서재의 밤바다를 밝히는 작은 촛불 보태기
+</div>
+            
+        </footer>
+
+
+    <div id="library-modal" class="modal" onclick="window.closeLibraryModal()">
+        <div class="modal-content backup-modal-content" onclick="event.stopPropagation()" style="max-width: 500px !important;">
+            <div class="detail-popup-header">
+                <h3>📖 수평선 너머의 바다, 서재 안내실</h3>
+                <span style="color: #90e0ef; font-size: 0.78rem; display: block; margin-top: 4px;">수평선 너머의 바다, 서재의 지침서</span>
+            </div>
+            
+            <div style="max-height: 340px; overflow-y: auto; padding-right: 5px; margin: 15px 0; text-align: left;">
+                <div style="background: rgba(0, 180, 216, 0.05); border: 1px solid rgba(0, 180, 216, 0.2); padding: 15px; border-radius: 10px; margin-bottom: 15px;">
+                    <h4 style="color: #90e0ef; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">📢 공지사항 (Notice)</h4>
+                    <p style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.6; white-space: pre-wrap;">• 본 서재는 명시된 기록자(아시, 하은)분들 만이 바다에 기록을 새길 수 있으며, 서재에 방문해주시는 독자 분들은 편지를 통해 기록자 분들에게 말 또는 글 등을 전할 수 있습니다.
+• 본 사이트 자체의 저작권은 아시(atritime, alyagsosiji, KUSE. 동일인물.)에게 있으며, BGM과 글은 사이트 맨 아래 저작권 표기를 참고해주세요.
+• 본 지침서 내용들을 꼭 읽어주세요. 읽지 않고 생기는 불이익은 개인 책임입니다.
+• 문의는 푸터 (맨아래) 메일로 보내주세요.</p>
+                </div>
+                
+                <div style="background: rgba(247, 163, 127, 0.05); border: 1px solid rgba(247, 163, 127, 0.2); padding: 15px; border-radius: 10px;">
+                    <h4 style="color: #f7a37f; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">✨ 서재 설명 (Description)</h4>
+                    <p style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.6; white-space: pre-wrap;">• 아득히 물드는 밤바다와 노을빛의 감성을 머금은 프라이빗 문학 아카이브 공간입니다.
+• 아래 소라 껍데기는 서재 내 바다의 기록에서 목록 정렬을 기준으로 글 한 개를 랜덤으로 불러옵니다.
+• 파도 모양의 버튼은 누를시 사이트 최상단으로 이동합니다.
+• 서재 맨 오른쪽 아래 음악창에서 음악을 키신 상태로 이용해주세요. BGM, ASMR 동시 재생을 권장합니다.
+• 음악창 위에 설정 버튼은 배경 및 날씨 효과를 원래는 자동 적용이지만 이를 수동으로 적용하실 수 있습니다. (날씨 적용 시 실시간 미반영)
+• 우측 상단의 날씨 위젯과 서재 배경은 현재 계신 곳의 날씨(한국 시간 기준)를 실시간으로 반영합니다. (위치 권한 거부 시 기본 부산 기준)
+• 글 목록 모드는 갤러리, 리스트, 스크롤(무한 스크롤, 페이지 제거 형식)를 선택하여 보실 수 있습니다.
+• 날씨 효과는 렉을 유발할 수 있으니, 날씨 효과가 작동 중일때 렉이 있다면, 날씨 효과를 꺼주세요.
+• 사이트 이름(정확히는 도메인) 마리존의 유래는 라틴어 Mar(바다) + 영어 Horizon(수평선)의 합성어로 수평선 너머의 바다 란 의미입니다.
+• 본 사이트는 데스크탑을 기준으로 만들어 졌습니다. 일정 모바일 최적화는 하였으나, 데스크탑 환경에서 이용하실 것을 권장드립니다.
+• 서재의 글에 대하여 읽는데 주의를 요합니다. 욕설 및 그외 부정적인 내용이 포함되어있을 수 있습니다.
+• 본 사이트는 웹앱을 지원합니다.</p>
+                </div>
+
+                <div style="background: rgba(144, 224, 239, 0.05); border: 1px solid rgba(144, 224, 239, 0.2); padding: 15px; border-radius: 10px; margin-top: 15px;">
+                    <h4 style="color: #90e0ef; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">📜 서재 이용약관 (Terms of Use)</h4>
+                    <p style="color: #cbd5e1; font-size: 0.82rem; line-height: 1.6; white-space: pre-wrap;">• <strong>위치 정보 :</strong> 창밖의 실시간 날씨와 위젯 온도를 동기화하기 위해 위치 권한을 사용합니다. 권한 거부 시 기본 위치 (부산) 기준으로 표시되며, 위치 데이터는 서버에 저장되지 않습니다.
+• <strong>푸시 알림 :</strong> 서재에 새로운 기록이나 편지가 도착했을 때 앱 알림을 받기 위해 사용됩니다.
+• <strong>기록 열람 :</strong> 서재의 기록 (글) 들을 열람하실 때 주의를 요하며, 부정적 내용 등이 글에 포함되어 있을 수 있으니 이에 대해 서재 지침서에 동의 후 글을 읽으신다면 읽고 난 후에 대한 영향은 개인 책임입니다.
+• <strong>이용 동의 :</strong> 서재를 이용(현재 이 지침서 창을 확인 완료 하거나 닫기)을 하신다면, 서재의 기능 활용 그리고 글 내용을 읽고 생기는 영향은 개인 책임이라는 것과 편지를 띄울 경우 기록의 소재로 사용됨에 동의하는 것으로 간주합니다.</p>
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 15px;">
+                <button onclick="window.closeLibraryModal()" class="cancel-btn" style="width: 100%; border-radius: 8px;">확인 완료</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h3>기록자 인증</h3>
+            <input type="text" id="admin-id" placeholder="아이디">
+            <input type="password" id="admin-pw" placeholder="비밀번호">
+            <div class="modal-buttons">
+                <button onclick="window.login()">로그인</button>
+                <button onclick="window.closeModal()" class="cancel-btn">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="backup-modal" class="modal" onclick="window.closeBackupModal()">
+        <div class="modal-content backup-modal-content" onclick="event.stopPropagation()">
+            <div class="detail-popup-header">
+                <h3>👑 기록자 관리창</h3>
+                <span id="backup-modal-subtitle">최근 30일 이내의 복구 지점만 보존됩니다.</span>
+            </div>
+            
+            <div class="admin-tab-header-node">
+                <button id="admin-btn-backup" class="admin-tab-node-btn" onclick="window.switchAdminTab('backup')" style="color:#f7a37f; border-bottom:2px solid #f7a37f;">💾 데이터 백업</button>
+                <button id="admin-btn-settings" class="admin-tab-node-btn" onclick="window.switchAdminTab('settings')" style="color:#64748b; border-bottom:2px solid transparent;">⚙️ 서재 설정</button>
+            </div>
+
+<div id="backup-delete-controls" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:0 5px; gap: 10px;">
+    
+    <label style="font-size:0.85rem; color:#cbd5e1; display:flex; align-items:center; gap:6px; cursor:pointer; white-space: nowrap; flex-shrink: 0;">
+        <input type="checkbox" id="backup-select-all" onclick="window.toggleAllBackups(this)" style="accent-color:#f7a37f; width:15px; height:15px; margin:0; cursor:pointer;"> 
+        <span style="line-height:1;">전체 선택</span>
+    </label>
+    
+    <div style="display:flex; gap:8px; align-items:center; justify-content: flex-end; flex-wrap: nowrap; flex-shrink: 0;">
+        <button onclick="window.triggerManualBackup()" class="mgmt-btn" style="height:30px; display:flex; align-items:center; margin:0; padding:0 12px; font-size:0.75rem; border-radius:6px; background:rgba(56,189,248,0.12); border:1px solid #38bdf8; color:#38bdf8; font-weight:bold; white-space: nowrap; flex-shrink: 0;">✨ 수동 백업</button>
+        
+        <select id="backup-period-select" onchange="window.selectBackupsByPeriod(this.value)" style="height:30px; margin:0; width:auto; background:rgba(3,10,23,0.8); border:1px solid rgba(247,163,127,0.3); color:#fff; padding:0 8px; border-radius:6px; font-size:0.75rem; outline:none; cursor:pointer; flex-shrink: 0; white-space: nowrap;">
+            <option value="">기간 선택</option><option value="7">7일 이전</option><option value="14">14일 이전</option><option value="all">모두 선택</option>
+        </select>
+        
+        <button onclick="window.deleteSelectedBackups()" class="danger-btn" style="height:30px; display:flex; align-items:center; margin:0; padding:0 12px; font-size:0.75rem; border-radius:6px; white-space: nowrap; flex-shrink: 0;">선택 소멸</button>
+    </div>
+</div>
+
+            <div id="admin-settings-container" style="display: none;"></div>
+            
+            <div class="backup-timeline-wrapper">
+                <p id="backup-loading-msg" style="color:#94a3b8; font-size:0.85rem; padding: 20px 0; text-align: center;">클라우드 보존 목록을 호출하는 중...</p>
+                <div id="backup-list-container"></div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button onclick="window.closeBackupModal()" class="cancel-btn">닫기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="modal" onclick="window.closeDetailModal()">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="detail-popup-header">
+                <h3 id="detail-title">제목</h3>
+                <span id="detail-date" class="date">날짜</span>
+            </div>
+            <div class="detail-popup-body">
+                <div id="detail-text">본문 내용</div>
+            </div>
+            <div class="modal-buttons" style="margin-top: 5px;">
+                <button onclick="window.closeDetailModal()">바다로 돌아가기</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="system-modal" class="modal">
+        <div class="modal-content system-modal-box">
+            <h3 id="system-title">안내</h3>
+            <p id="system-message">시스템 메시지 공간</p>
+            <div id="system-buttons" class="modal-buttons" style="margin-top: 20px;"></div>
+        </div>
+    </div>
+
+    <div id="update-toast" class="update-toast">
+        <p>수평선 너머, 새로운 바다가 준비되었습니다.<br>새로고침하여 적용할까요?</p>
+        <div class="update-buttons">
+            <button id="update-reload-btn">새로고침</button>
+            <button id="update-dismiss-btn" class="cancel-btn">나중에</button>
+        </div>
+    </div>
+        
+    <div id="donation-modal" class="donation-modal-overlay" style="display: none;">
+    <div class="donation-modal-content">
+        <span class="close-donation" onclick="closeDonationModal()">&times;</span>
+        <h3 class="donation-title">따뜻한 마음 보내기</h3>
+        
+        <p class="donation-desc">
+            기록자들의 새벽을 밝히는<br>
+            따뜻한 커피 한 잔은<br>
+            이 수평선 너머의 서재를<br>
+            지켜나가는 큰 힘이 됩니다.
+        </p>
+        
+        <div class="qr-image-box">
+            <img src="kakao_qr.png" alt="카카오페이 QR코드" class="qr-img">
+        </div>
+        
+        <p class="donation-guide">
+            카카오톡 카메라나 페이 앱으로<br>
+            QR 코드를 스캔해 주세요.
+        </p>
+    </div>
+</div>
+<div id="pin-modal" class="pin-modal-overlay" style="display: none;">
+    <div class="pin-modal-content">
+        <h3 class="pin-title">보안 코드 입력</h3>
+        <p class="pin-desc">서재의 기록자로 접근하기 위해<br>보안 코드를 입력해 주세요.</p>
+        
+        <div class="pin-display-box">
+            <span id="pin-display"></span>
+        </div>
+        
+        <div class="keypad">
+            <button class="key-btn" onclick="inputPin('1')">1</button>
+            <button class="key-btn" onclick="inputPin('2')">2</button>
+            <button class="key-btn" onclick="inputPin('3')">3</button>
+            <button class="key-btn" onclick="inputPin('4')">4</button>
+            <button class="key-btn" onclick="inputPin('5')">5</button>
+            <button class="key-btn" onclick="inputPin('6')">6</button>
+            <button class="key-btn" onclick="inputPin('7')">7</button>
+            <button class="key-btn" onclick="inputPin('8')">8</button>
+            <button class="key-btn" onclick="inputPin('9')">9</button>
+            <button class="key-btn btn-clear" onclick="clearPin()">C</button>
+            <button class="key-btn" onclick="inputPin('0')">0</button>
+            <button class="key-btn btn-submit" onclick="submitPin()">확인</button>
+        </div>
+    </div>
+</div>
+    <script src="script.js"></script>
+</body>
+</html>
