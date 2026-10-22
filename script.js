@@ -612,8 +612,8 @@ function renderAdminSettings() {
     container.innerHTML = `
         <div style="background:rgba(3,10,23,0.5); padding:20px; border-radius:10px; border:1px solid rgba(255,255,255,0.05); text-align:left; margin-bottom: 15px;">
             <h3 style="color:#fff; margin-bottom:15px; font-size:1.05rem; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">관리자 전용 제어 시스템</h3>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div style="padding-right:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px;">
+                <div>
                     <div style="color:#e2e8f0; font-weight:bold; margin-bottom:5px;">🌊 바다 휴식 모드 (수신 차단)</div>
                     <div style="color:#94a3b8; font-size:0.75rem; line-height:1.4;">활성화 시, 일반 방문객들의 편지 수신 작성이 제한되고 안내 문구가 표시됩니다.</div>
                 </div>
@@ -1374,10 +1374,11 @@ function renderUI(isAppend = false) {
 
         if (subtitleElem) {
             let subtitleText = '';
+            // text-shadow 대신 filter: drop-shadow를 적용하여 그라데이션 텍스트가 깨지지 않고 맑게 빛나도록 처리
             if (currentView === 'posts') {
-                subtitleText = `<span style="color:#ffffff; font-size:1.02rem; font-weight:500; letter-spacing:0.5px; text-shadow:0 0 10px rgba(144,224,239,0.6); background:linear-gradient(120deg, #fff, #b9efff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:inline-block;">아래 바다에 기록된 글들을 클릭하여 읽어주세요!</span><br><span style="color: #90e0ef; font-size: 0.85rem; display: inline-block; margin-top: 9px;">총 기록된 글 : ${allPosts.length}개</span>`;
+                subtitleText = `<span style="color:#ffffff; font-size:1.02rem; font-weight:500; letter-spacing:0.5px; filter:drop-shadow(0 0 8px rgba(144,224,239,0.5)); background:linear-gradient(120deg, #fff, #b9efff); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; display:inline-block;">아래 바다에 기록된 글들을 클릭하여 읽어주세요!</span><br><span style="color: #90e0ef; font-size: 0.85rem; display: inline-block; margin-top: 9px;">총 기록된 글 : ${allPosts.length}개</span>`;
             } else if (currentView === 'horizons') {
-                subtitleText = `<span style="color:#ffffff; font-size:1.02rem; font-weight:500; letter-spacing:0.5px; text-shadow:0 0 10px rgba(216, 180, 255, 0.6); background:linear-gradient(120deg, #fff, #e4c1ff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; display:inline-block;">기록자만이 열람할 수 있는 비밀의 바다입니다.</span><br><span style="color: #c9a0ff; font-size: 0.85rem; display: inline-block; margin-top: 9px;">은밀한 기록 : ${allHorizons.length}개</span>`;
+                subtitleText = `<span style="color:#ffffff; font-size:1.02rem; font-weight:500; letter-spacing:0.5px; filter:drop-shadow(0 0 8px rgba(216,180,255,0.5)); background:linear-gradient(120deg, #fff, #e4c1ff); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; display:inline-block;">기록자만이 열람할 수 있는 비밀의 바다입니다.</span><br><span style="color: #c9a0ff; font-size: 0.85rem; display: inline-block; margin-top: 9px;">은밀한 기록 : ${allHorizons.length}개</span>`;
             } else {
                 subtitleText = `수평선 너머 바다 위에 띄워진 편지들.<br><span style="color: #ffd4ba; font-size: 0.85rem; display: inline-block; margin-top: 9px;">띄워진 편지 : ${allLetters.length}개</span>`;
             }
@@ -1385,7 +1386,7 @@ function renderUI(isAppend = false) {
             let selectHtml = `
             <div style="margin-top:20px; display:flex; flex-direction:column; align-items:center; width:100%; gap:15px;">
                 <div style="display:flex; justify-content:center; width:100%;">
-                    <select onchange="window.setDisplayMode(this.value)" style="max-width: 180px;">
+                    <select onchange="window.setDisplayMode(this.value)" style="max-width: 190px;">
                         <option value="list" ${currentDisplayMode === 'list' ? 'selected' : ''}>📄 리스트 모드</option>
                         <option value="grid" ${currentDisplayMode === 'grid' ? 'selected' : ''}>🔲 갤러리 모드</option>
                         <option value="infinite" ${currentDisplayMode === 'infinite' ? 'selected' : ''}>🌊 스크롤 모드</option>
@@ -1574,7 +1575,7 @@ function renderUI(isAppend = false) {
             }
         }
 
-        card.innerHTML = `<h3 style="${isAdmin && currentView === 'letters' ? 'padding-right: 32px;' : ''}">${selectLetterCbHtml}${highlightSearchKeyword(item.title, searchKeyword)}${readBadgeHtml}</h3>${contentHtml}${footerHtml}`;
+        card.innerHTML = `<h3 style="${isAdmin && currentView === 'letters' ? 'padding-right: 34px;' : ''}">${selectLetterCbHtml}${highlightSearchKeyword(item.title, searchKeyword)}${readBadgeHtml}</h3>${contentHtml}${footerHtml}`;
         cardFragment.appendChild(card);
     });
 
@@ -2082,7 +2083,7 @@ window.openEnvironmentSettingsModal = function() {
             <div class="modal-content" onclick="event.stopPropagation()" style="width: 90%; max-width:360px; padding:35px; background:linear-gradient(145deg, #0a1b36, #040d1c); border:1px solid rgba(0, 180, 216, 0.3); border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,0.7); text-align:center;">
                 <h3 style="margin-bottom:25px; font-size:1.3rem; color:#fff; display:flex; align-items:center; justify-content:center;">
                     <span style="background:transparent !important; -webkit-background-clip:padding-box !important; -webkit-text-fill-color:#e2e8f0 !important; color:#e2e8f0 !important; text-shadow:none !important; display:inline-block; font-family:'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important; margin-right:8px; font-weight:normal !important;">⚙️</span>
-                    <span style="background:linear-gradient(135deg, #a9efff, #90e0ef); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight: bold;">서재 환경 조작</span>
+                    <span style="background:linear-gradient(135deg, #a9efff, #90e0ef); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; font-weight: bold;">서재 환경 조작</span>
                     <span style="background:transparent !important; -webkit-background-clip:padding-box !important; -webkit-text-fill-color:#e2e8f0 !important; color:#e2e8f0 !important; text-shadow:none !important; display:inline-block; font-family:'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif !important; margin-left:8px; font-weight:normal !important; opacity:0; pointer-events:none;">⚙️</span>
                 </h3>
                 <div class="env-panel-area">
@@ -2134,7 +2135,7 @@ window.applyEnvironmentSettings = function() {
     window.closeEnvironmentSettingsModal();
 };
 
-// 수면 파문 효과 (다중 터치 시 불필요한 생성 방지)
+// 수면 파문 효과
 document.addEventListener('pointerdown', function(e) {
     if (!e.isPrimary) return;
     const ripple = document.createElement('div');
